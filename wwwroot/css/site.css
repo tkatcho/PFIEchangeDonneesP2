@@ -1,0 +1,21 @@
+body {
+   background-color: rgb(189, 228, 255);
+   color: rgb(2, 59, 71);
+}
+
+hr {
+   border: 2px solid rgb(160, 205, 250);
+   border-radius: 4px;
+}
+
+.icon {
+   width: 170px;
+   float: left;
+   margin-right: 20px;
+}
+.endpoints {
+   display:grid;
+   grid-template-columns: 80px 200px auto;
+   row-gap: 20px;
+   font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+}

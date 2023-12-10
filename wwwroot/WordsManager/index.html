@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestionnaire de words</title>
+
+    <link rel="site.webmanifest" href="manifest.json" />
+    <link rel="icon" href="dict-logo.png">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="css/site.css">
+    <link rel="stylesheet" href="css/words.css">
+</head>
+
+<body>
+    <div id="main">
+        <div id="header">
+            <img src="dict-logo.png" class="appLogo" alt="" title="Dictionnaire de mots">
+            <h4 id="actionTitle">Mots</h4>
+
+            <div id="search">
+                <input type="search" id="searchKey" placeholder="X* | *X* | X*Y | *X"/>
+                <i for="searchKey" id="doSearch" class="cmdIcon fa fa-search" ></i>
+            </div>
+
+            <i class="cmdIcon fa fa-times" id="abort" title="Annuler"></i>
+            <div class="dropdown ms-auto">
+                <div data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="cmdIcon fa fa-ellipsis-vertical"></i>
+                </div>
+                <div class="dropdown-menu noselect">
+                    <div class="dropdown-item" id="aboutCmd">
+                        <i class="menuIcon fa fa-info-circle mx-2"></i> À propos...
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="content">
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.maskedinput/1.4.1/jquery.maskedinput.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+    <script src="js/API_Words.js"></script>
+    <script src="js/validation.js"></script>
+    <script src="js/siteUI.js"></script>
+</body>
+
+</html>

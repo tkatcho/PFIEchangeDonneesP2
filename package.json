@@ -1,0 +1,23 @@
+{
+  "name": "serveur-minimale",
+  "type": "module",
+  "engines": {
+    "node": "16.14.2"
+  },
+  "version": "1.0.0",
+  "description": "Serveur http minimal",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "author": "Nicolas Chourot",
+  "license": "ISC",
+  "dependencies": {
+    "date-and-time": "^2.4.1",
+    "nodemailer": "^6.8.0",
+    "properties-reader": "^2.1.1",
+    "query-string": "^8.1.0",
+    "uuid": "^8.3.2"
+  }
+}

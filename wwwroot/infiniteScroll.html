@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta author="Nicolas Chourot">
+        <meta http-equiv="Content-Type" content="text/html; charset= ISO-8859-1">
+        <title>Weird Dictionary</title>
+        <style>
+            .mainContainer {
+                display: flex;
+                flex-direction: column;
+                max-width: 700px;
+                min-width: 600px;
+                margin: auto;
+                background-color: rgb(255, 255, 255);
+                height: 100vh;
+                border: 1px solid lightgray;
+            }
+
+            .scrollContainer {
+                overflow-x: hidden;
+                overflow-y: scroll;
+                border-top: 1px solid lightgray;
+                height: inherit;
+            }
+
+            .wordsContainer {
+                margin: auto;
+                margin-left: 8px;
+                max-width: 1600px;
+                width: 100%;
+                display: grid;
+                grid-template-columns: repeat(auto-fill, 165px);
+            }
+
+            .word {
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                height: 23px;
+            }
+
+            .link {
+                cursor: pointer;
+                font-size: 15px;
+            }
+
+            div2 {
+                border: 1px solid red;
+            }
+
+            .header {
+                display: grid;
+                grid-template-columns: repeat(27, auto);
+                align-items: center;
+            }
+        </style>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+        <link rel="stylesheet"
+            href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+
+    </head>
+
+    <body>
+        <div class="mainContainer">
+            <div class="header">
+                <div class="letter link">*</div>
+                <div class="letter link">A</div>
+                <div class="letter link">B</div>
+                <div class="letter link">C</div>
+                <div class="letter link">D</div>
+                <div class="letter link">E</div>
+                <div class="letter link">F</div>
+                <div class="letter link">G</div>
+                <div class="letter link">H</div>
+                <div class="letter link">I</div>
+                <div class="letter link">J</div>
+                <div class="letter link">K</div>
+                <div class="letter link">L</div>
+                <div class="letter link">M</div>
+                <div class="letter link">N</div>
+                <div class="letter link">O</div>
+                <div class="letter link">P</div>
+                <div class="letter link">Q</div>
+                <div class="letter link">R</div>
+                <div class="letter link">S</div>
+                <div class="letter link">T</div>
+                <div class="letter link">U</div>
+                <div class="letter link">V</div>
+                <div class="letter link">W</div>
+                <div class="letter link">X</div>
+                <div class="letter link">Y</div>
+                <div class="letter link">Z</div>
+            </div>
+            <br>
+            <div class="scrollContainer">
+                <div id="words" class="wordsContainer">
+                </div>
+            </div>
+        </div>
+        <div id='showDefinition'>
+            <div id='definition'></div>
+        </div>
+    </body>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    <script>
+        let rowHeight = 23;
+        // estimate the value of limit according to height of scrollContainer
+        let limit = Math.round($(".scrollContainer").height() / rowHeight * 4);
+        let offset = 0;
+        let currentLetter = "";
+        let previousScrollPosition = 0;
+        $(document).ready(function () {
+            $("#showDefinition").dialog(
+                {
+                    autoOpen: false,
+                    show: { effect: 'fade', speed: 400 },
+                    hide: { effect: 'fade', speed: 400 },
+                });
+
+            //// Handling window resize
+            var resizeTimer = false;
+            $(window).on('resize', function (e) {
+                if (!resizeTimer) {
+                    $(window).trigger('resizestart');
+                }
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(function () {
+                    resizeTimer = false;
+                    $(window).trigger('resizeend');
+                }, 250);
+            }).on('resizestart', function () {
+                console.log('Started resizing the window');
+            }).on('resizeend', function () {
+                console.log('Done resizing the window');
+                limit = Math.round($(".scrollContainer").height() / rowHeight * 4);
+                let currentOffset = offset;
+                previousScrollPosition = $(".scrollContainer").scrollTop();
+                $('#words').empty();
+                for (offset = 0; offset <= currentOffset; offset++) {
+                    webAPI_GET();
+                }
+                offset = currentOffset;
+            });
+            $(".scrollContainer").scroll(function () {
+                let containerHeight = rowHeight * (limit / 4) * offset - rowHeight;
+                console.log($(".scrollContainer").scrollTop(), containerHeight, offset);
+                if ($(".scrollContainer").scrollTop() >= containerHeight) {
+                    offset++;
+                    console.log("Scrolling offset=", offset);
+                    previousScrollPosition = $(".scrollContainer").scrollTop();
+                    webAPI_GET();
+                }
+            });
+            $('#previous').click(function () {
+                if (offset > 0)
+                    offset--;
+                webAPI_GET();
+            });
+            $('#next').click(function () {
+                offset++;
+                webAPI_GET();
+            });
+            $('.letter').click(function () {
+                offset = 0;
+                $('#words').empty();
+                $('.letter').css('color', 'black');
+                $(this).css('color', 'blue');
+                let selectedLetter = $(this).html();
+                if (selectedLetter == "*")
+                    currentLetter = "";
+                else
+                    currentLetter = selectedLetter;
+                    console.log(selectedLetter, currentLetter)
+                webAPI_GET();
+            })
+            webAPI_GET();
+
+
+        })
+
+        function showDefinition(word, definition) {
+            $('#showDefinition').dialog('option', 'title', word);
+            $('#definition').html(definition);
+            $("#showDefinition").dialog('open');
+        }
+
+        function webAPI_GET() {
+            let queryString = "?limit=" + limit + "&offset=" + offset;
+            if (currentLetter != "*")
+                queryString += "&Val=" + currentLetter + "*";
+
+            $.ajax({
+                url: "http://localhost:5000/api/words" + queryString,
+                type: 'GET',
+                contentType: 'text/plain',
+                data: {},
+                success: words => { refreshWordsContainer(words) },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    console.log("webAPI_GET_ALL - error", jqXHR.status);
+                }
+            });
+
+            function refreshWordsContainer(words) {
+                words.forEach(word => {
+                    $('#words').append("<div class='link word' data-placement='bottom' title='" + word.Def + "'>" + word.Val + "</div>");
+                });
+                $(".scrollContainer").scrollTop(previousScrollPosition);
+                $(".word").click(function () {
+                    showDefinition($(this).html(), $(this).attr('title'));
+                });
+                console.log("Limit = ", limit);
+                console.log("Offset = ", offset);
+            }
+
+        }
+    </script>
+
+</html>

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>KBG-API Server</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/site.css" />
+    <link rel="icon" href="images/favicon.png">
+</head>
+
+<body>
+    <img src="images/favicon.png" alt="" class="icon">
+    <h1>KBG - AP SERVER</h1>
+    <h3>Auteur: Nicolas Chourot</h3>
+    <h3>Département d'informatique</h3>
+    <h3>Collège Lionel-Groulx</h3>
+    <hr>
+    <br>
+    <br>
+    <div style="margin:auto; width:90%">
+        <h1>Liste des services</h1>
+
+        <h2><a href="api/contacts" target="_blank">Contacts</a></h2>
+        <div class="endpoints">
+            <span>GET</span>
+            <span>api/contacts</span>
+            <span></span>
+
+            <span>GET</span>
+            <span>api/contacts/id</span>
+            <span></span>
+
+            <span>POST</span>
+            <span>api/contacts</span>
+            <span>{ "Name": string, "Phone": string, "Email": string } Name doit être unique</span>
+
+            <span>PUT</span>
+            <span>api/contacts/id</span>
+            <span>{ "Name": string, "Phone": string, "Email": string } Name doit être unique</span>
+
+            <span>DELETE</span>
+            <span>api/contacts/id</span>
+            <span></span>
+
+        </div>
+        <br>
+
+        <h2><a href="api/bookmarks" target="_blank">Bookmarks</a></h2>
+        <div class="endpoints">
+            <span>GET</span>
+            <span>api/bookmarks</span>
+            <span></span>
+
+            <span>GET</span>
+            <span>api/bookmarks/id</span>
+            <span></span>
+
+            <span>POST</span>
+            <span>api/bookmarks</span>
+            <span>{ "Title": string, "Url": string, "Category": string } Title doit être unique</span>
+
+            <span>PUT</span>
+            <span>api/bookmarks/id</span>
+            <span>{ "Title": string, "Url": string, "Category": string } Title doit être unique</span>
+
+            <span>DELETE</span>
+            <span>api/bookmarks/id</span>
+            <span></span>
+
+        </div>
+
+    </div>
+    <script>
+        console.log("index");
+    </script>
+</body>
+
+</html>

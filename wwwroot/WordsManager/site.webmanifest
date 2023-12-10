@@ -1,0 +1,15 @@
+{
+    "name": "Words Manager",
+    "short_name": "Words Manager",
+    "icons": [
+        {
+            "src": "dict-logo.png",
+            "sizes": "any",
+            "type": "image/png",
+            "purpose": "any"
+        }
+    ],
+    "theme_color": "#ffffff",
+    "background_color": "#ffffff",
+    "display": "standalone"
+}
