@@ -858,7 +858,6 @@ function renderCreatePhotoForm() {
     createPhoto(photo);
   });
 
-  // Event handler for cancel button
   $("#abortCreatePhotoCmd").on("click", function () {
     renderPhotos();
   });
@@ -871,10 +870,42 @@ async function createPhoto(photo) {
     renderError("Un problème est survenu.");
   }
 }
-function renderPhoto() {}
+function renderPhoto(photo) {}
 async function renderPhotosList() {
   eraseContent();
-  $("#content").append("<h2> En contruction </h2>");
-}
+  let photos = await API.GetPhotos();
+  let loggedUser = await API.retrieveLoggedUser();
+  if (API.error) {
+    renderError();
+  } else {
+    $("#content").empty().addClass("photosLayout"); // Make sure the container has the 'photosLayout' class
+    photos.data.forEach((photo) => {
+      if (photo.Shared == true || photo.OwnerId == loggedUser.Id) {
+        let photoRow = `
+            <div class="photoLayout" onclick="navigateToPhotoDescription('${
+              photo.Id
+            }')">
+                <div class="photoTitleContainer">
+                    <div class="photoTitle">${photo.Title}</div>
+            </div>
+              <div class="photoImage" style="background-image: url('${
+                photo.Image
+              }');"></div>
+              
+              <div class="photoCreationDate">
+                <div>${new Date(photo.Date).toLocaleDateString()}</div>
+                <div>${new Date(photo.Date).toLocaleTimeString()}</div>
+              </div>
 
+            </div>
+          `;
+        $("#content").append(photoRow);
+      }
+    });
+  }
+}
+function navigateToPhotoDescription(photoId) {
+  let photo = API.GetPhotosById(photoId);
+  console.log(photoId);
+}
 //#endregion
