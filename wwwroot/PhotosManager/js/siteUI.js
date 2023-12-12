@@ -1,4 +1,8 @@
+//import { nowInSeconds } from "../../../utilities";
+
 //<span class="cmdIcon fa-solid fa-ellipsis-vertical"></span>
+
+//#region prof
 let contentScrollPosition = 0;
 let sortType = "date";
 let keywords = "";
@@ -20,70 +24,81 @@ let offset = 0;
 
 Init_UI();
 function Init_UI() {
-    getViewPortPhotosRanges();
-    initTimeout(delayTimeOut, renderExpiredSession);
-    installWindowResizeHandler();
-    if (API.retrieveLoggedUser())
-        renderPhotos();
-    else
-        renderLoginForm();
+  getViewPortPhotosRanges();
+  initTimeout(delayTimeOut, renderExpiredSession);
+  installWindowResizeHandler();
+  if (API.retrieveLoggedUser()) renderPhotos();
+  else renderLoginForm();
 }
 
 // pour la pagination
 function getViewPortPhotosRanges() {
-    // estimate the value of limit according to height of content
-    VerticalPhotosCount = Math.round($("#content").innerHeight() / photoContainerHeight);
-    HorizontalPhotosCount = Math.round($("#content").innerWidth() / photoContainerWidth);
-    limit = (VerticalPhotosCount + 1) * HorizontalPhotosCount;
-    console.log("VerticalPhotosCount:", VerticalPhotosCount, "HorizontalPhotosCount:", HorizontalPhotosCount)
-    offset = 0;
+  // estimate the value of limit according to height of content
+  VerticalPhotosCount = Math.round(
+    $("#content").innerHeight() / photoContainerHeight
+  );
+  HorizontalPhotosCount = Math.round(
+    $("#content").innerWidth() / photoContainerWidth
+  );
+  limit = (VerticalPhotosCount + 1) * HorizontalPhotosCount;
+  console.log(
+    "VerticalPhotosCount:",
+    VerticalPhotosCount,
+    "HorizontalPhotosCount:",
+    HorizontalPhotosCount
+  );
+  offset = 0;
 }
 // pour la pagination
 function installWindowResizeHandler() {
-    var resizeTimer = null;
-    var resizeEndTriggerDelai = 250;
-    $(window).on('resize', function (e) {
-        if (!resizeTimer) {
-            $(window).trigger('resizestart');
-        }
-        clearTimeout(resizeTimer);
-        resizeTimer = setTimeout(function () {
-            resizeTimer = null;
-            $(window).trigger('resizeend');
-        }, resizeEndTriggerDelai);
-    }).on('resizestart', function () {
-        console.log('resize start');
-    }).on('resizeend', function () {
-        console.log('resize end');
-        if ($('#photosLayout') != null) {
-            getViewPortPhotosRanges();
-            if (currentViewName == "photosList")
-                renderPhotosList();
-        }
+  var resizeTimer = null;
+  var resizeEndTriggerDelai = 250;
+  $(window)
+    .on("resize", function (e) {
+      if (!resizeTimer) {
+        $(window).trigger("resizestart");
+      }
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(function () {
+        resizeTimer = null;
+        $(window).trigger("resizeend");
+      }, resizeEndTriggerDelai);
+    })
+    .on("resizestart", function () {
+      console.log("resize start");
+    })
+    .on("resizeend", function () {
+      console.log("resize end");
+      if ($("#photosLayout") != null) {
+        getViewPortPhotosRanges();
+        if (currentViewName == "photosList") renderPhotosList();
+      }
     });
 }
 function attachCmd() {
-    $('#loginCmd').on('click', renderLoginForm);
-    $('#logoutCmd').on('click', logout);
-    $('#listPhotosCmd').on('click', renderPhotos);
-    $('#listPhotosMenuCmd').on('click', renderPhotos);
-    $('#editProfilMenuCmd').on('click', renderEditProfilForm);
-    $('#renderManageUsersMenuCmd').on('click', renderManageUsers);
-    $('#editProfilCmd').on('click', renderEditProfilForm);
-    $('#aboutCmd').on("click", renderAbout);
+  $("#loginCmd").on("click", renderLoginForm);
+  $("#logoutCmd").on("click", logout);
+  $("#listPhotosCmd").on("click", renderPhotos);
+  $("#listPhotosMenuCmd").on("click", renderPhotos);
+  $("#editProfilMenuCmd").on("click", renderEditProfilForm);
+  $("#renderManageUsersMenuCmd").on("click", renderManageUsers);
+  $("#editProfilCmd").on("click", renderEditProfilForm);
+  $("#newPhotoCmd").on("click", renderCreatePhotoForm);
+
+  $("#aboutCmd").on("click", renderAbout);
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Header management
 function loggedUserMenu() {
-    let loggedUser = API.retrieveLoggedUser();
-    if (loggedUser) {
-        let manageUserMenu = `
+  let loggedUser = API.retrieveLoggedUser();
+  if (loggedUser) {
+    let manageUserMenu = `
             <span class="dropdown-item" id="renderManageUsersMenuCmd">
                 <i class="menuIcon fas fa-user-cog mx-2"></i> Gestion des usagers
             </span>
             <div class="dropdown-divider"></div>
         `;
-        return `
+    return `
             ${loggedUser.isAdmin ? manageUserMenu : ""}
             <span class="dropdown-item" id="logoutCmd">
                 <i class="menuIcon fa fa-sign-out mx-2"></i> Déconnexion
@@ -96,37 +111,34 @@ function loggedUserMenu() {
                 <i class="menuIcon fa fa-image mx-2"></i> Liste des photos
             </span>
         `;
-    }
-    else
-        return `
+  } else
+    return `
             <span class="dropdown-item" id="loginCmd">
                 <i class="menuIcon fa fa-sign-in mx-2"></i> Connexion
             </span>`;
 }
 function viewMenu(viewName) {
-    if (viewName == "photosList") {
-        // todo
-        return "";
-    }
-    else
-        return "";
+  if (viewName == "photosList") {
+    // todo
+    return "";
+  } else return "";
 }
 function connectedUserAvatar() {
-    let loggedUser = API.retrieveLoggedUser();
-    if (loggedUser)
-        return `
+  let loggedUser = API.retrieveLoggedUser();
+  if (loggedUser)
+    return `
             <div class="UserAvatarSmall" userId="${loggedUser.Id}" id="editProfilCmd" style="background-image:url('${loggedUser.Avatar}')" title="${loggedUser.Name}"></div>
         `;
-    return "";
+  return "";
 }
 function refreshHeader() {
-    UpdateHeader(currentViewTitle, currentViewName);
+  UpdateHeader(currentViewTitle, currentViewName);
 }
 function UpdateHeader(viewTitle, viewName) {
-    currentViewTitle = viewTitle;
-    currentViewName = viewName;
-    $("#header").empty();
-    $("#header").append(`
+  currentViewTitle = viewTitle;
+  currentViewName = viewName;
+  $("#header").empty();
+  $("#header").append(`
         <span title="Liste des photos" id="listPhotosCmd"><img src="images/PhotoCloudLogo.png" class="appLogo"></span>
         <span class="viewTitle">${viewTitle} 
             <div class="cmdIcon fa fa-plus" id="newPhotoCmd" title="Ajouter une photo"></div>
@@ -151,141 +163,153 @@ function UpdateHeader(viewTitle, viewName) {
 
         </div>
     `);
-    if (sortType == "keywords" && viewName == "photosList") {
-        $("#customHeader").show();
-        $("#customHeader").empty();
-        $("#customHeader").append(`
+  if (sortType == "keywords" && viewName == "photosList") {
+    $("#customHeader").show();
+    $("#customHeader").empty();
+    $("#customHeader").append(`
             <div class="searchContainer">
                 <input type="search" class="form-control" placeholder="Recherche par mots-clés" id="keywords" value="${keywords}"/>
                 <i class="cmdIcon fa fa-search" id="setSearchKeywordsCmd"></i>
             </div>
         `);
-    } else {
-        $("#customHeader").hide();
-    }
-    attachCmd();
+  } else {
+    $("#customHeader").hide();
+  }
+  attachCmd();
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Actions and command
 async function login(credential) {
-    console.log("login");
-    loginMessage = "";
-    EmailError = "";
-    passwordError = "";
-    Email = credential.Email;
-    await API.login(credential.Email, credential.Password);
-    if (API.error) {
-        switch (API.currentStatus) {
-            case 482: passwordError = "Mot de passe incorrect"; renderLoginForm(); break;
-            case 481: EmailError = "Courriel introuvable"; renderLoginForm(); break;
-            default: renderError("Le serveur ne répond pas"); break;
-        }
-    } else {
-        let loggedUser = API.retrieveLoggedUser();
-        if (loggedUser.VerifyCode == 'verified') {
-            if (!loggedUser.isBlocked)
-                renderPhotos();
-            else {
-                loginMessage = "Votre compte a été bloqué par l'administrateur";
-                logout();
-            }
-        }
-        else
-            renderVerify();
+  console.log("login");
+  loginMessage = "";
+  EmailError = "";
+  passwordError = "";
+  Email = credential.Email;
+  await API.login(credential.Email, credential.Password);
+  if (API.error) {
+    switch (API.currentStatus) {
+      case 482:
+        passwordError = "Mot de passe incorrect";
+        renderLoginForm();
+        break;
+      case 481:
+        EmailError = "Courriel introuvable";
+        renderLoginForm();
+        break;
+      default:
+        renderError("Le serveur ne répond pas");
+        break;
     }
+  } else {
+    let loggedUser = API.retrieveLoggedUser();
+    if (loggedUser.VerifyCode == "verified") {
+      if (!loggedUser.isBlocked) renderPhotos();
+      else {
+        loginMessage = "Votre compte a été bloqué par l'administrateur";
+        logout();
+      }
+    } else renderVerify();
+  }
 }
 async function logout() {
-    console.log('logout');
-    await API.logout();
-    renderLoginForm();
+  console.log("logout");
+  await API.logout();
+  renderLoginForm();
 }
 function isVerified() {
-    let loggedUser = API.retrieveLoggedUser();
-    return loggedUser.VerifyCode == "verified";
+  let loggedUser = API.retrieveLoggedUser();
+  return loggedUser.VerifyCode == "verified";
 }
 async function verify(verifyCode) {
-    let loggedUser = API.retrieveLoggedUser();
-    if (await API.verifyEmail(loggedUser.Id, verifyCode)) {
-        renderPhotos();
-    } else {
-        renderError("Désolé, votre code de vérification n'est pas valide...");
-    }
+  let loggedUser = API.retrieveLoggedUser();
+  if (await API.verifyEmail(loggedUser.Id, verifyCode)) {
+    renderPhotos();
+  } else {
+    renderError("Désolé, votre code de vérification n'est pas valide...");
+  }
 }
 async function editProfil(profil) {
-    if (await API.modifyUserProfil(profil)) {
-        let loggedUser = API.retrieveLoggedUser();
-        if (loggedUser) {
-            if (isVerified()) {
-                renderPhotos();
-            } else
-                renderVerify();
-        } else
-            renderLoginForm();
-
-    } else {
-        renderError("Un problème est survenu.");
-    }
-}
-async function createProfil(profil) {
-    if (await API.register(profil)) {
-        loginMessage = "Votre compte a été créé. Veuillez prendre vos courriels pour réccupérer votre code de vérification qui vous sera demandé lors de votre prochaine connexion."
-        renderLoginForm();
-    } else {
-        renderError("Un problème est survenu.");
-    }
-}
-async function adminDeleteAccount(userId) {
-    if (await API.unsubscribeAccount(userId)) {
-        renderManageUsers();
-    } else {
-        renderError("Un problème est survenu.");
-    }
-}
-async function deleteProfil() {
+  if (await API.modifyUserProfil(profil)) {
     let loggedUser = API.retrieveLoggedUser();
     if (loggedUser) {
-        if (await API.unsubscribeAccount(loggedUser.Id)) {
-            loginMessage = "Votre compte a été effacé.";
-            logout();
-        } else
-            renderError("Un problème est survenu.");
-    }
+      if (isVerified()) {
+        renderPhotos();
+      } else renderVerify();
+    } else renderLoginForm();
+  } else {
+    renderError("Un problème est survenu.");
+  }
+}
+async function createProfil(profil) {
+  if (await API.register(profil)) {
+    loginMessage =
+      "Votre compte a été créé. Veuillez prendre vos courriels pour réccupérer votre code de vérification qui vous sera demandé lors de votre prochaine connexion.";
+    renderLoginForm();
+  } else {
+    renderError("Un problème est survenu.");
+  }
+}
+async function adminDeleteAccount(userId) {
+  if (await API.unsubscribeAccount(userId)) {
+    renderManageUsers();
+  } else {
+    renderError("Un problème est survenu.");
+  }
+}
+async function deleteProfil() {
+  let loggedUser = API.retrieveLoggedUser();
+  if (loggedUser) {
+    if (await API.unsubscribeAccount(loggedUser.Id)) {
+      loginMessage = "Votre compte a été effacé.";
+      logout();
+    } else renderError("Un problème est survenu.");
+  }
 }
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Views rendering
 function showWaitingGif() {
-    eraseContent();
-    $("#content").append($("<div class='waitingGifcontainer'><img class='waitingGif' src='images/Loading_icon.gif' /></div>'"));
+  eraseContent();
+  $("#content").append(
+    $(
+      "<div class='waitingGifcontainer'><img class='waitingGif' src='images/Loading_icon.gif' /></div>'"
+    )
+  );
 }
 function eraseContent() {
-    $("#content").empty();
+  $("#content").empty();
 }
 function saveContentScrollPosition() {
-    contentScrollPosition = $("#content")[0].scrollTop;
+  contentScrollPosition = $("#content")[0].scrollTop;
 }
 function restoreContentScrollPosition() {
-    $("#content")[0].scrollTop = contentScrollPosition;
+  $("#content")[0].scrollTop = contentScrollPosition;
 }
 async function renderError(message) {
-    noTimeout();
-    switch (API.currentStatus) {
-        case 401:
-        case 403:
-        case 405:
-            message = "Accès refusé...Expiration de votre session. Veuillez vous reconnecter.";
-            await API.logout();
-            renderLoginForm();
-            break;
-        case 404: message = "Ressource introuvable..."; break;
-        case 409: message = "Ressource conflictuelle..."; break;
-        default: if (!message) message = "Un problème est survenu...";
-    }
-    saveContentScrollPosition();
-    eraseContent();
-    UpdateHeader("Problème", "error");
-    $("#newPhotoCmd").hide();
-    $("#content").append(
-        $(`
+  noTimeout();
+  switch (API.currentStatus) {
+    case 401:
+    case 403:
+    case 405:
+      message =
+        "Accès refusé...Expiration de votre session. Veuillez vous reconnecter.";
+      await API.logout();
+      renderLoginForm();
+      break;
+    case 404:
+      message = "Ressource introuvable...";
+      break;
+    case 409:
+      message = "Ressource conflictuelle...";
+      break;
+    default:
+      if (!message) message = "Un problème est survenu...";
+  }
+  saveContentScrollPosition();
+  eraseContent();
+  UpdateHeader("Problème", "error");
+  $("#newPhotoCmd").hide();
+  $("#content").append(
+    $(`
             <div class="errorContainer">
                 <b>${message}</b>
             </div>
@@ -294,9 +318,9 @@ async function renderError(message) {
                 <button id="connectCmd" class="form-control btn-primary">Connexion</button>
             </div>
         `)
-    );
-    $('#connectCmd').on('click', renderLoginForm);
-    /* pour debug
+  );
+  $("#connectCmd").on("click", renderLoginForm);
+  /* pour debug
      $("#content").append(
         $(`
             <div class="errorContainer">
@@ -314,15 +338,15 @@ async function renderError(message) {
     ); */
 }
 function renderAbout() {
-    timeout();
-    saveContentScrollPosition();
-    eraseContent();
-    UpdateHeader("À propos...", "about");
-    $("#newPhotoCmd").hide();
-    $("#createContact").hide();
-    $("#abort").show();
-    $("#content").append(
-        $(`
+  timeout();
+  saveContentScrollPosition();
+  eraseContent();
+  UpdateHeader("À propos...", "about");
+  $("#newPhotoCmd").hide();
+  $("#createContact").hide();
+  $("#abort").show();
+  $("#content").append(
+    $(`
             <div class="aboutContainer">
                 <h2>Gestionnaire de photos</h2>
                 <hr>
@@ -337,30 +361,27 @@ function renderAbout() {
                     Collège Lionel-Groulx, automne 2023
                 </p>
             </div>
-        `))
+        `)
+  );
 }
 async function renderPhotos() {
-    timeout();
-    showWaitingGif();
-    UpdateHeader('Liste des photos', 'photosList')
-    $("#newPhotoCmd").show();
-    $("#abort").hide();
-    let loggedUser = API.retrieveLoggedUser();
-    if (loggedUser)
-        renderPhotosList();
-    else {
-        renderLoginForm();
-    }
+  timeout();
+  showWaitingGif();
+  UpdateHeader("Liste des photos", "photosList");
+  $("#newPhotoCmd").show();
+  $("#abort").hide();
+  let loggedUser = API.retrieveLoggedUser();
+  if (loggedUser) renderPhotosList();
+  else {
+    renderLoginForm();
+  }
 }
-async function renderPhotosList() {
-    eraseContent();
-    $("#content").append("<h2> En contruction </h2>");
-}
+
 function renderVerify() {
-    eraseContent();
-    UpdateHeader("Vérification", "verify");
-    $("#newPhotoCmd").hide();
-    $("#content").append(`
+  eraseContent();
+  UpdateHeader("Vérification", "verify");
+  $("#newPhotoCmd").hide();
+  $("#content").append(`
         <div class="content">
             <form class="form" id="verifyForm">
                 <b>Veuillez entrer le code de vérification de que vous avez reçu par courriel</b>
@@ -375,20 +396,20 @@ function renderVerify() {
             </form>
         </div>
     `);
-    initFormValidation(); // important do to after all html injection!
-    $('#verifyForm').on("submit", function (event) {
-        let verifyForm = getFormData($('#verifyForm'));
-        event.preventDefault();
-        showWaitingGif();
-        verify(verifyForm.Code);
-    });
+  initFormValidation(); // important do to after all html injection!
+  $("#verifyForm").on("submit", function (event) {
+    let verifyForm = getFormData($("#verifyForm"));
+    event.preventDefault();
+    showWaitingGif();
+    verify(verifyForm.Code);
+  });
 }
 function renderCreateProfil() {
-    noTimeout();
-    eraseContent();
-    UpdateHeader("Inscription", "createProfil");
-    $("#newPhotoCmd").hide();
-    $("#content").append(`
+  noTimeout();
+  eraseContent();
+  UpdateHeader("Inscription", "createProfil");
+  $("#newPhotoCmd").hide();
+  $("#content").append(`
         <br/>
         <form class="form" id="createProfilForm"'>
             <fieldset>
@@ -459,41 +480,53 @@ function renderCreateProfil() {
             <button class="form-control btn-secondary" id="abortCreateProfilCmd">Annuler</button>
         </div>
     `);
-    $('#loginCmd').on('click', renderLoginForm);
-    initFormValidation(); // important do to after all html injection!
-    initImageUploaders();
-    $('#abortCreateProfilCmd').on('click', renderLoginForm);
-    addConflictValidation(API.checkConflictURL(), 'Email', 'saveUser');
-    $('#createProfilForm').on("submit", function (event) {
-        let profil = getFormData($('#createProfilForm'));
-        delete profil.matchedPassword;
-        delete profil.matchedEmail;
-        event.preventDefault();
-        showWaitingGif();
-        createProfil(profil);
-    });
+  $("#loginCmd").on("click", renderLoginForm);
+  initFormValidation(); // important do to after all html injection!
+  initImageUploaders();
+  $("#abortCreateProfilCmd").on("click", renderLoginForm);
+  addConflictValidation(API.checkConflictURL(), "Email", "saveUser");
+  $("#createProfilForm").on("submit", function (event) {
+    let profil = getFormData($("#createProfilForm"));
+    delete profil.matchedPassword;
+    delete profil.matchedEmail;
+    event.preventDefault();
+    showWaitingGif();
+    createProfil(profil);
+  });
 }
 async function renderManageUsers() {
-    timeout();
-    let loggedUser = API.retrieveLoggedUser();
-    if (loggedUser.isAdmin) {
-        if (isVerified()) {
-            showWaitingGif();
-            UpdateHeader('Gestion des usagers', 'manageUsers')
-            $("#newPhotoCmd").hide();
-            $("#abort").hide();
-            let users = await API.GetAccounts();
-            if (API.error) {
-                renderError();
-            } else {
-                $("#content").empty();
-                users.data.forEach(user => {
-                    if (user.Id != loggedUser.Id) {
-                        let typeIcon = user.Authorizations.readAccess == 2 ? "fas fa-user-cog" : "fas fa-user-alt";
-                        typeTitle = user.Authorizations.readAccess == 2 ? "Retirer le droit administrateur à" : "Octroyer le droit administrateur à";
-                        let blockedClass = user.Authorizations.readAccess == -1 ? "class=' blockUserCmd cmdIconVisible fa fa-ban redCmd'" : "class='blockUserCmd cmdIconVisible fa-regular fa-circle greenCmd'";
-                        let blockedTitle = user.Authorizations.readAccess == -1 ? "Débloquer $name" : "Bloquer $name";
-                        let userRow = `
+  timeout();
+  let loggedUser = API.retrieveLoggedUser();
+  if (loggedUser.isAdmin) {
+    if (isVerified()) {
+      showWaitingGif();
+      UpdateHeader("Gestion des usagers", "manageUsers");
+      $("#newPhotoCmd").hide();
+      $("#abort").hide();
+      let users = await API.GetAccounts();
+      if (API.error) {
+        renderError();
+      } else {
+        $("#content").empty();
+        users.data.forEach((user) => {
+          if (user.Id != loggedUser.Id) {
+            let typeIcon =
+              user.Authorizations.readAccess == 2
+                ? "fas fa-user-cog"
+                : "fas fa-user-alt";
+            typeTitle =
+              user.Authorizations.readAccess == 2
+                ? "Retirer le droit administrateur à"
+                : "Octroyer le droit administrateur à";
+            let blockedClass =
+              user.Authorizations.readAccess == -1
+                ? "class=' blockUserCmd cmdIconVisible fa fa-ban redCmd'"
+                : "class='blockUserCmd cmdIconVisible fa-regular fa-circle greenCmd'";
+            let blockedTitle =
+              user.Authorizations.readAccess == -1
+                ? "Débloquer $name"
+                : "Bloquer $name";
+            let userRow = `
                         <div class="UserRow"">
                             <div class="UserContainer noselect">
                                 <div class="UserLayout">
@@ -511,39 +544,37 @@ async function renderManageUsers() {
                             </div>
                         </div>           
                         `;
-                        $("#content").append(userRow);
-                    }
-                });
-                $(".promoteUserCmd").on("click", async function () {
-                    let userId = $(this).attr("userId");
-                    await API.PromoteUser(userId);
-                    renderManageUsers();
-                });
-                $(".blockUserCmd").on("click", async function () {
-                    let userId = $(this).attr("userId");
-                    await API.BlockUser(userId);
-                    renderManageUsers();
-                });
-                $(".removeUserCmd").on("click", function () {
-                    let userId = $(this).attr("userId");
-                    renderConfirmDeleteAccount(userId);
-                });
-            }
-        } else
-            renderVerify();
-    } else
-        renderLoginForm();
+            $("#content").append(userRow);
+          }
+        });
+        $(".promoteUserCmd").on("click", async function () {
+          let userId = $(this).attr("userId");
+          await API.PromoteUser(userId);
+          renderManageUsers();
+        });
+        $(".blockUserCmd").on("click", async function () {
+          let userId = $(this).attr("userId");
+          await API.BlockUser(userId);
+          renderManageUsers();
+        });
+        $(".removeUserCmd").on("click", function () {
+          let userId = $(this).attr("userId");
+          renderConfirmDeleteAccount(userId);
+        });
+      }
+    } else renderVerify();
+  } else renderLoginForm();
 }
 async function renderConfirmDeleteAccount(userId) {
-    timeout();
-    let loggedUser = API.retrieveLoggedUser();
-    if (loggedUser) {
-        let userToDelete = (await API.GetAccount(userId)).data;
-        if (!API.error) {
-            eraseContent();
-            UpdateHeader("Retrait de compte", "confirmDeleteAccoun");
-            $("#newPhotoCmd").hide();
-            $("#content").append(`
+  timeout();
+  let loggedUser = API.retrieveLoggedUser();
+  if (loggedUser) {
+    let userToDelete = (await API.GetAccount(userId)).data;
+    if (!API.error) {
+      eraseContent();
+      UpdateHeader("Retrait de compte", "confirmDeleteAccoun");
+      $("#newPhotoCmd").hide();
+      $("#content").append(`
                 <div class="content loginForm">
                     <br>
                     <div class="form UserRow ">
@@ -565,23 +596,23 @@ async function renderConfirmDeleteAccount(userId) {
                     </div>
                 </div>
             `);
-            $("#deleteAccountCmd").on("click", function () {
-                adminDeleteAccount(userToDelete.Id);
-            });
-            $("#abortDeleteAccountCmd").on("click", renderManageUsers);
-        } else {
-            renderError("Une erreur est survenue");
-        }
+      $("#deleteAccountCmd").on("click", function () {
+        adminDeleteAccount(userToDelete.Id);
+      });
+      $("#abortDeleteAccountCmd").on("click", renderManageUsers);
+    } else {
+      renderError("Une erreur est survenue");
     }
+  }
 }
 function renderEditProfilForm() {
-    timeout();
-    let loggedUser = API.retrieveLoggedUser();
-    if (loggedUser) {
-        eraseContent();
-        UpdateHeader("Profil", "editProfil");
-        $("#newPhotoCmd").hide();
-        $("#content").append(`
+  timeout();
+  let loggedUser = API.retrieveLoggedUser();
+  if (loggedUser) {
+    eraseContent();
+    UpdateHeader("Profil", "editProfil");
+    $("#newPhotoCmd").hide();
+    $("#content").append(`
             <br/>
             <form class="form" id="editProfilForm"'>
                 <input type="hidden" name="Id" id="Id" value="${loggedUser.Id}"/>
@@ -660,29 +691,29 @@ function renderEditProfilForm() {
                 <button class="form-control btn-warning" id="confirmDelelteProfilCMD">Effacer le compte</button>
             </div>
         `);
-        initFormValidation(); // important do to after all html injection!
-        initImageUploaders();
-        addConflictValidation(API.checkConflictURL(), 'Email', 'saveUser');
-        $('#abortEditProfilCmd').on('click', renderPhotos);
-        $('#confirmDelelteProfilCMD').on('click', renderConfirmDeleteProfil);
-        $('#editProfilForm').on("submit", function (event) {
-            let profil = getFormData($('#editProfilForm'));
-            delete profil.matchedPassword;
-            delete profil.matchedEmail;
-            event.preventDefault();
-            showWaitingGif();
-            editProfil(profil);
-        });
-    }
+    initFormValidation(); // important do to after all html injection!
+    initImageUploaders();
+    addConflictValidation(API.checkConflictURL(), "Email", "saveUser");
+    $("#abortEditProfilCmd").on("click", renderPhotos);
+    $("#confirmDelelteProfilCMD").on("click", renderConfirmDeleteProfil);
+    $("#editProfilForm").on("submit", function (event) {
+      let profil = getFormData($("#editProfilForm"));
+      delete profil.matchedPassword;
+      delete profil.matchedEmail;
+      event.preventDefault();
+      showWaitingGif();
+      editProfil(profil);
+    });
+  }
 }
 function renderConfirmDeleteProfil() {
-    timeout();
-    let loggedUser = API.retrieveLoggedUser();
-    if (loggedUser) {
-        eraseContent();
-        UpdateHeader("Retrait de compte", "confirmDeleteProfil");
-        $("#newPhotoCmd").hide();
-        $("#content").append(`
+  timeout();
+  let loggedUser = API.retrieveLoggedUser();
+  if (loggedUser) {
+    eraseContent();
+    UpdateHeader("Retrait de compte", "confirmDeleteProfil");
+    $("#newPhotoCmd").hide();
+    $("#content").append(`
             <div class="content loginForm">
                 <br>
                 
@@ -694,22 +725,22 @@ function renderConfirmDeleteProfil() {
                 </div>
             </div>
         `);
-        $("#deleteProfilCmd").on("click", deleteProfil);
-        $('#cancelDeleteProfilCmd').on('click', renderEditProfilForm);
-    }
+    $("#deleteProfilCmd").on("click", deleteProfil);
+    $("#cancelDeleteProfilCmd").on("click", renderEditProfilForm);
+  }
 }
 function renderExpiredSession() {
-    noTimeout();
-    loginMessage = "Votre session est expirée. Veuillez vous reconnecter.";
-    logout();
-    renderLoginForm();
+  noTimeout();
+  loginMessage = "Votre session est expirée. Veuillez vous reconnecter.";
+  logout();
+  renderLoginForm();
 }
 function renderLoginForm() {
-    noTimeout();
-    eraseContent();
-    UpdateHeader("Connexion", "Login");
-    $("#newPhotoCmd").hide();
-    $("#content").append(`
+  noTimeout();
+  eraseContent();
+  UpdateHeader("Connexion", "Login");
+  $("#newPhotoCmd").hide();
+  $("#content").append(`
         <div class="content" style="text-align:center">
             <div class="loginMessage">${loginMessage}</div>
             <form class="form" id="loginForm">
@@ -738,22 +769,112 @@ function renderLoginForm() {
             </div>
         </div>
     `);
-    initFormValidation(); // important do to after all html injection!
-    $('#createProfilCmd').on('click', renderCreateProfil);
-    $('#loginForm').on("submit", function (event) {
-        let credential = getFormData($('#loginForm'));
-        event.preventDefault();
-        showWaitingGif();
-        login(credential);
-    });
+  initFormValidation(); // important do to after all html injection!
+  $("#createProfilCmd").on("click", renderCreateProfil);
+  $("#loginForm").on("submit", function (event) {
+    let credential = getFormData($("#loginForm"));
+    event.preventDefault();
+    showWaitingGif();
+    login(credential);
+  });
 }
 function getFormData($form) {
-    const removeTag = new RegExp("(<[a-zA-Z0-9]+>)|(</[a-zA-Z0-9]+>)", "g");
-    var jsonObject = {};
-    console.log($form.serializeArray());
-    $.each($form.serializeArray(), (index, control) => {
-        jsonObject[control.name] = control.value.replace(removeTag, "");
-    });
-    return jsonObject;
+  const removeTag = new RegExp("(<[a-zA-Z0-9]+>)|(</[a-zA-Z0-9]+>)", "g");
+  var jsonObject = {};
+  console.log($form.serializeArray());
+  $.each($form.serializeArray(), (index, control) => {
+    jsonObject[control.name] = control.value.replace(removeTag, "");
+  });
+  return jsonObject;
 }
 
+//#endregion
+
+//#region notre partie
+function renderCreatePhotoForm() {
+  noTimeout(); // Disable timeout
+  eraseContent(); // Clear existing content
+  UpdateHeader("Ajout de Photo", "createPhoto"); // Update the header
+
+  // Append the form to the content
+  $("#content").append(`
+      <br/>
+      <form class="form" id="createPhotoForm">
+          <fieldset>
+              <legend>Informations</legend>
+              <input  type="text" 
+                      class="form-control Title" 
+                      name="Title" 
+                      id="Title"
+                      placeholder="Titre" 
+                      required 
+                      RequireMessage='Veuillez entrer votre titre'
+                      InvalidMessage='Titre invalide'
+                      CustomErrorMessage="Ce titre est déjà utilisé"/>
+              <textarea
+                  class="form-control photoDetailsDescription"
+                  name="Description"
+                  id="Description"
+                  placeholder="Description"
+                  required
+                  RequireMessage='Veuillez entrer votre description'
+                  InvalidMessage='Description invalide'
+                  CustomErrorMessage="Description invalide"></textarea>
+              <label class="checkbox-label">
+                  <input type="checkbox" id="Shared" name="Shared">
+                  Partager
+              </label>
+          </fieldset>
+          <fieldset>
+              <legend>Image</legend>
+              <div class='imageUploader' 
+                   newImage='true' 
+                   controlId='Image' 
+                   imageSrc='images/PhotoCloudLogo.png' 
+                   waitingImage="images/Loading_icon.gif">
+              </div>
+          </fieldset>
+  
+          <input type='submit' name='submit' id='savePhoto' value="Enregistrer" class="form-control btn-primary">
+      </form>
+      <div class="cancel">
+          <button class="form-control btn-secondary" id="abortCreatePhotoCmd">Annuler</button>
+      </div>
+    `);
+
+  initFormValidation();
+  initImageUploaders();
+
+  $("#createPhotoForm").on("submit", function (event) {
+    event.preventDefault();
+
+    let photo = getFormData($(this));
+    photo.OwnerId = API.retrieveLoggedUser().Id;
+    photo.Date = Date.now();
+    photo.Shared = $("#Shared").is(":checked");
+    console.log(photo);
+
+    showWaitingGif();
+    createPhoto(photo);
+  });
+
+  // Event handler for cancel button
+  $("#abortCreatePhotoCmd").on("click", function () {
+    renderPhotos();
+  });
+}
+
+async function createPhoto(photo) {
+  if (await API.CreatePhoto(photo)) {
+    renderPhotos();
+  } else {
+    renderError("Un problème est survenu.");
+  }
+}
+function renderPhoto() {}
+async function renderPhotosList() {
+  eraseContent();
+  $("#content").append("<h2> En contruction </h2>");
+}
+
+//#endregion
