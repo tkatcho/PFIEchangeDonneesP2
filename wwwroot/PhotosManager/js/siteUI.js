@@ -877,18 +877,33 @@ async function renderPhotosList() {
   let photos = await API.GetPhotos();
   let editDel = "";
   let loggedUser = await API.retrieveLoggedUser();
+  let user;
+  let pdpShared = "";
   if (API.error) {
     renderError();
   } else {
     //like logo when liked <i class="cmdIcon fa fa-thumbs-up" id="unlikeCmd"></i>
     $("#content").empty().addClass("photosLayout");
-    photos.data.forEach((photo) => {
+    photos.data.forEach(async (photo) => {
+      user = await API.GetAccount(photo.OwnerId);
+      editDel = "";
+      pdpShare = "";
       if (photo.Shared == true || photo.OwnerId == loggedUser.Id) {
         if (loggedUser.Id == photo.OwnerId) {
           editDel = `
           <i class="cmdIcon fa fa-pencil" onclick="renderEditPhotoForm('${photo.Id}')"></i>
           <i class="cmdIcon fa fa-trash" onclick="deletePhotoForm('${photo.Id}')"></i>`;
+          if (photo.Shared == true) {
+            pdpShared =
+              `<i class="UserAvatarSmall" style="background-image: url('${user.data.Avatar}');"></i>` +
+              `<i class="cmdIcon fa fa-share-square"></i>`;
+          } else {
+            pdpShared = `<i class="UserAvatarSmall" style="background-image: url('${user.data.Avatar}');"></i>`;
+          }
+        } else {
+          pdpShared = `<i class="UserAvatarSmall" style="background-image: url('${user.data.Avatar}');"></i>`;
         }
+
         let photoRow =
           `
             <div class="photoLayout">
@@ -898,13 +913,13 @@ async function renderPhotosList() {
           editDel +
           `
             </div>
-              <div class="photoImage" onclick="navigateToPhotoDescription('${
-                photo.Id
-              }')" style="background-image: url('${photo.Image}');"></div>
+              <div class="photoImage" onclick="navigateToPhotoDescription('${photo.Id}')" style="background-image: url('${photo.Image}');">` +
+          pdpShared +
+          `</div>
               <div class="photoCreationDate">
                 <div>${new Date(photo.Date).toLocaleDateString()} @ ${new Date(
             photo.Date
-          ).toLocaleTimeString()}</div><div>nbLikes<i class="cmdIcon fa fa-thumbs-up"></i></div></div></div>
+          ).toLocaleTimeString()}</div><div>nbLikes<i class="cmdIcon fa-regular fa-thumbs-up"></i></div></div></div>
           `;
         $("#content").append(photoRow);
       }
