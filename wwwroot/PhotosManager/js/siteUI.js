@@ -277,6 +277,7 @@ function showWaitingGif() {
 }
 function eraseContent() {
   $("#content").empty();
+  $("#content").removeClass("photosLayout");
 }
 function saveContentScrollPosition() {
   contentScrollPosition = $("#content")[0].scrollTop;
@@ -802,12 +803,12 @@ function renderCreatePhotoForm() {
       <form class="form" id="createPhotoForm">
           <fieldset>
               <legend>Informations</legend>
-              <input  type="text" 
-                      class="form-control Title" 
-                      name="Title" 
+              <input  type="text"
+                      class="form-control Title"
+                      name="Title"
                       id="Title"
-                      placeholder="Titre" 
-                      required 
+                      placeholder="Titre"
+                      required
                       RequireMessage='Veuillez entrer votre titre'
                       InvalidMessage='Titre invalide'
                       CustomErrorMessage="Ce titre est déjà utilisé"/>
@@ -827,14 +828,14 @@ function renderCreatePhotoForm() {
           </fieldset>
           <fieldset>
               <legend>Image</legend>
-              <div class='imageUploader' 
-                   newImage='true' 
-                   controlId='Image' 
-                   imageSrc='images/PhotoCloudLogo.png' 
+              <div class='imageUploader'
+                   newImage='true'
+                   controlId='Image'
+                   imageSrc='images/PhotoCloudLogo.png'
                    waitingImage="images/Loading_icon.gif">
               </div>
           </fieldset>
-  
+
           <input type='submit' name='submit' id='savePhoto' value="Enregistrer" class="form-control btn-primary">
       </form>
       <div class="cancel">
@@ -874,36 +875,180 @@ function renderPhoto(photo) {}
 async function renderPhotosList() {
   eraseContent();
   let photos = await API.GetPhotos();
+  let editDel = "";
   let loggedUser = await API.retrieveLoggedUser();
   if (API.error) {
     renderError();
   } else {
-    $("#content").empty().addClass("photosLayout"); // Make sure the container has the 'photosLayout' class
+    //like logo when liked <i class="cmdIcon fa fa-thumbs-up" id="unlikeCmd"></i>
+    $("#content").empty().addClass("photosLayout");
     photos.data.forEach((photo) => {
       if (photo.Shared == true || photo.OwnerId == loggedUser.Id) {
-        let photoRow = `
-            <div class="photoLayout" onclick="navigateToPhotoDescription('${
-              photo.Id
-            }')">
+        if (loggedUser.Id == photo.OwnerId) {
+          editDel = `
+          <i class="cmdIcon fa fa-pencil" onclick="renderEditPhotoForm('${photo.Id}')"></i>
+          <i class="cmdIcon fa fa-trash" onclick="deletePhotoForm('${photo.Id}')"></i>`;
+        }
+        let photoRow =
+          `
+            <div class="photoLayout">
                 <div class="photoTitleContainer">
                     <div class="photoTitle">${photo.Title}</div>
+                    ` +
+          editDel +
+          `
             </div>
-              <div class="photoImage" style="background-image: url('${
-                photo.Image
-              }');"></div>
-              
+              <div class="photoImage" onclick="navigateToPhotoDescription('${
+                photo.Id
+              }')" style="background-image: url('${photo.Image}');"></div>
               <div class="photoCreationDate">
-                <div>${new Date(photo.Date).toLocaleDateString()}</div>
-                <div>${new Date(photo.Date).toLocaleTimeString()}</div>
-              </div>
-
-            </div>
+                <div>${new Date(photo.Date).toLocaleDateString()} @ ${new Date(
+            photo.Date
+          ).toLocaleTimeString()}</div><div>nbLikes<i class="cmdIcon fa fa-thumbs-up"></i></div></div></div>
           `;
         $("#content").append(photoRow);
       }
     });
+    $("#editImageCmd").on("click", function (event) {
+      renderEditPhotoForm();
+    });
   }
 }
+
+async function renderEditPhotoForm(photoId = null) {
+  noTimeout(); // Disable timeout
+  eraseContent(); // Clear existing content
+  UpdateHeader("Modification de Photo", "modifierPhoto"); // Update the header
+
+  let photo = await API.GetPhotosById(photoId);
+
+  // Append the form to the content
+  $("#content").append(`
+  <br/>
+  <form class="form" id="editPhotoForm">
+      <fieldset>
+          <legend>Informations</legend>
+          <input  type="text"
+                  class="form-control Title"
+                  name="Title"
+                  id="Title"
+                  placeholder="Titre"
+                  required
+                  RequireMessage='Veuillez entrer votre titre'
+                  InvalidMessage='Titre invalide'
+                  CustomErrorMessage="Ce titre est déjà utilisé"
+                  value="${photo.Title}"/>
+          <textarea
+              class="form-control photoDetailsDescription"
+              name="Description"
+              id="Description"
+              placeholder="Description"
+              required
+              RequireMessage='Veuillez entrer votre description'
+              InvalidMessage='Description invalide'
+              CustomErrorMessage="Description invalide">${
+                photo.Description
+              }</textarea>
+          <label class="checkbox-label">
+              <input type="checkbox" id="Shared" name="Shared" ${
+                photo.Shared ? "checked" : ""
+              }>
+              Partager
+          </label>
+      </fieldset>
+      <fieldset>
+          <legend>Image</legend>
+          <div class='imageUploader'
+               newImage='false'
+               controlId='Image'
+               imageSrc='${photo.Image}'
+               waitingImage="images/Loading_icon.gif">
+          </div>
+      </fieldset>
+
+      <input type='submit' name='submit' id='savePhoto' value="Enregistrer" class="form-control btn-primary">
+  </form>
+  <div class="cancel">
+      <button class="form-control btn-secondary" id="abortCreatePhotoCmd">Annuler</button>
+  </div>
+`);
+
+  initFormValidation();
+  initImageUploaders();
+
+  $("#editPhotoForm").on("submit", function (event) {
+    event.preventDefault();
+
+    let photo2 = getFormData($(this));
+    photo2.Date = Date.now();
+    photo2.Id = photo.Id;
+    photo2.Shared = $("#Shared").is(":checked");
+    photo2.OwnerId = photo.OwnerId;
+    console.log(photo2);
+
+    showWaitingGif();
+
+    updatePhoto(photo2);
+  });
+
+  $("#abortCreatePhotoCmd").on("click", function () {
+    renderPhotos();
+  });
+}
+async function updatePhoto(photo) {
+  if (await API.UpdatePhoto(photo)) {
+    renderPhotos();
+  } else {
+    renderError("Un problème est survenu.");
+  }
+}
+async function deletePhotoForm(photoId) {
+  timeout();
+  let photo = await API.GetPhotosById(photoId);
+
+  if (photo) {
+    eraseContent();
+    UpdateHeader("Retrait de photo", "retraitPhoto");
+    $("#newPhotoCmd").hide();
+    $("#content").append(`
+    <div class="content loginForm">
+                    <br>
+                    <div class="form UserRow ">
+                        <h4> Voulez-vous vraiment effacer cette photo? </h4>
+                        <div class="UserContainer noselect">
+                            <div class="UserLayout">
+                            <div class="photoLayout">
+                            <div class="photoTitleContainer">
+                                <div class="photoTitle">${photo.Title}</div>
+                        </div>
+                          <div class="photoImage" style="background-image: url('${photo.Image}');"></div>
+                                
+                            </div>
+                        </div>
+                    </div>           
+                    <div class="form">
+                        <button class="form-control btn-danger" id="deletePhotoCmd">Effacer la photo</button>
+                        <br>
+                        <button class="form-control btn-secondary" id="abortDeleteAccountCmd">Annuler</button>
+                    </div>
+                </div>
+    `);
+    $("#deletePhotoCmd").on("click", function () {
+      deleteImage(photo);
+    });
+    $("#abortDeleteAccountCmd").on("click", renderPhotosList);
+  } else {
+    renderError("Une erreur est survenue");
+  }
+}
+async function deleteImage(image) {
+  if (await API.DeletePhoto(image.Id)) {
+    renderPhotos();
+  } else {
+    renderError("Un problème est survenu.");
+  }
+}
+
 function navigateToPhotoDescription(photoId) {
   let photo = API.GetPhotosById(photoId);
   console.log(photoId);
