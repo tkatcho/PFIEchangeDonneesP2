@@ -81,10 +81,12 @@ export default class Photos extends Controller {
   }
   remove(id) {
     if (Authorizations.writeGranted(this.HttpContext, this.authorizations)) {
+      //find by field and remove photos from photo like repository
       if (this.repository != null) {
         if (id) {
-          if (this.repository.remove(id)) this.HttpContext.response.accepted();
-          else this.HttpContext.response.notFound("Ressource not found.");
+          if (this.repository.remove(id)) {
+            this.HttpContext.response.accepted();
+          } else this.HttpContext.response.notFound("Ressource not found.");
         } else
           this.HttpContext.response.badRequest(
             "The Id in the request url is rather not specified or syntactically wrong."

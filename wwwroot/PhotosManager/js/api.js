@@ -366,6 +366,25 @@ class API {
       });
     });
   }
+  static RemoveLike(likeId) {
+    API.initHttpState();
+    return new Promise((resolve, reject) => {
+      $.ajax({
+        url: serverHost + photoLikes_API + "/" + likeId,
+        type: "DELETE",
+        headers: API.getBearerAuthorizationToken(),
+        contentType: "application/json",
+        data: JSON.stringify(likeId),
+        success: (data) => {
+          resolve(data);
+        },
+        error: (xhr) => {
+          API.setHttpErrorState(xhr);
+          reject(xhr); // Reject the promise on error
+        },
+      });
+    });
+  }
 }
 
 ////////////////////// Local storage management/////////////////////////////////////////////////
