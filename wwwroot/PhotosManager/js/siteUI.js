@@ -919,7 +919,9 @@ async function renderPhotosList() {
               <div class="photoCreationDate">
                 <div>${new Date(photo.Date).toLocaleDateString()} @ ${new Date(
             photo.Date
-          ).toLocaleTimeString()}</div><div>nbLikes<i class="cmdIcon fa-regular fa-thumbs-up"></i></div></div></div>
+          ).toLocaleTimeString()}</div><div>nbLikes<i class="cmdIcon fa-regular fa-thumbs-up" onclick="addLike('${
+            photo.Id
+          }')"></i></div></div></div>
           `;
         $("#content").append(photoRow);
       }
@@ -1063,7 +1065,14 @@ async function deleteImage(image) {
     renderError("Un problème est survenu.");
   }
 }
-
+async function addLike(imageId) {
+  let user = await API.retrieveLoggedUser();
+  console.log(imageId);
+  await API.AddLike(user.Id, imageId);
+}
+async function removeLike(imageId) {
+  
+}
 function navigateToPhotoDescription(photoId) {
   let photo = API.GetPhotosById(photoId);
   console.log(photoId);

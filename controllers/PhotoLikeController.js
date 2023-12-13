@@ -6,8 +6,11 @@ import Controller from "./Controller.js";
 
 export default class Photos extends Controller {
   constructor(HttpContext) {
-    super(HttpContext, new Repository(new PhotoModel()), Authorizations.user());
-    this.photoLikesRepository = new Repository(new PhotoLikeModel());
+    super(
+      HttpContext,
+      new Repository(new PhotoLikeModel()),
+      Authorizations.user()
+    );
   }
 
   get(id) {
@@ -27,6 +30,7 @@ export default class Photos extends Controller {
       } else this.HttpContext.response.notImplemented();
     } else this.HttpContext.response.unAuthorized("Unauthorized access");
   }
+
   post(data) {
     if (Authorizations.writeGranted(this.HttpContext, this.authorizations)) {
       if (this.repository != null) {
