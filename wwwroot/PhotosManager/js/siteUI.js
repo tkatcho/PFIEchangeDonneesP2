@@ -964,6 +964,7 @@ async function renderPhotosList() {
   let loggedUser = await API.retrieveLoggedUser();
   let user;
   let pdpShared = "";
+  currentPhotoLikes= [];
   if (API.error) {
     renderError();
   } else {
@@ -973,6 +974,14 @@ async function renderPhotosList() {
       user = await API.GetAccount(photo.OwnerId);
       editDel = "";
       pdpShare = "";
+
+      const likes = await API.GetLikesByPhotoId(photo.Id);
+      currentPhotoLikes.push(...likes);
+      const likesCount = likes.length;
+      let userHasLiked = likes.some(like => like.UserId === loggedUser.Id);
+      let likeIconClass = userHasLiked ? "cmdIcon fa fa-thumbs-up" : "cmdIcon fa-regular fa-thumbs-up";
+      const likersNames = likes.map(like => like.UserName).join(", ");
+
       if (photo.Shared == true || photo.OwnerId == loggedUser.Id) {
         if (loggedUser.Id == photo.OwnerId) {
           editDel = `
@@ -1004,9 +1013,8 @@ async function renderPhotosList() {
               <div class="photoCreationDate">
                 <div>${new Date(photo.Date).toLocaleDateString()} @ ${new Date(
             photo.Date
-          ).toLocaleTimeString()}</div><div>nbLikes<i class="cmdIcon fa-regular fa-thumbs-up" onclick="addLike('${
-            photo.Id
-          }')"></i></div></div></div>
+          ).toLocaleTimeString()}</div>      <div>${likesCount}<i class="${likeIconClass}" onclick="toggleLike(event, '${photo.Id}', ${userHasLiked}, true)" title="${likersNames}"></i></div>
+          </div></div>
           `;
         $("#content").append(photoRow);
       }

@@ -2,7 +2,7 @@
 
 const serverHost = "http://localhost:5000";
 const photos_API = "/api/photos";
-const photoLikes_API = "/api/photolike";
+const photoLikes_API = "/api/photolikes";
 class API {
   //#region yapyap
   static initHttpState() {
@@ -347,6 +347,7 @@ class API {
     });
   }
   //#endregion
+  /*
   static AddLike(userId, imageId) {
     API.initHttpState();
     return new Promise((resolve, reject) => {
@@ -365,7 +366,7 @@ class API {
         },
       });
     });
-  }
+  }*//*
   static RemoveLike(likeId) {
     API.initHttpState();
     return new Promise((resolve, reject) => {
@@ -384,7 +385,7 @@ class API {
         },
       });
     });
-  }
+  }*/
   static GetLikesByPhotoId(id) {
     API.initHttpState();
     console.log("id+ " + id);
@@ -424,19 +425,7 @@ static UnlikePhoto(likeId) {
             error: (xhr) => { this.setHttpErrorState(xhr); resolve(false); }
         });
     });
-}static GetLikesByPhotoId(id) {
-        API.initHttpState();
-        console.log("id+ " + id);
-        return new Promise(resolve => {
-            $.ajax({
-                url: serverHost + photoLikes_API + "/" + id,
-                type: 'GET',
-                headers: this.getBearerAuthorizationToken(),
-                success: (likes) => resolve(likes),
-                error: (xhr) => { this.setHttpErrorState(xhr); resolve(null); }
-            });
-        });
-    }   
+}
 }
 
 ////////////////////// Local storage management/////////////////////////////////////////////////

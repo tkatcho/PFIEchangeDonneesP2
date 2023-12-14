@@ -1,13 +1,13 @@
 import Authorizations from "../authorizations.js";
 import Repository from "../models/repository.js";
 import PhotoLikeModel from "../models/photoLike.js";
-import UserModel from "../models/user.js"; // Import UserModel
+import UserModel from "../models/user.js";
 import Controller from "./Controller.js";
 
 export default class PhotoLikes extends Controller {
     constructor(HttpContext) {
         super(HttpContext, new Repository(new PhotoLikeModel()), Authorizations.user());
-        this.userRepository = new Repository(new UserModel()); // Instantiate UserRepository
+        this.userRepository = new Repository(new UserModel());
     }
 
 
