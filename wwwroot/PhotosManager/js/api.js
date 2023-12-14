@@ -230,6 +230,19 @@ class API {
             });
         });
     }
+        static GetLikesByPhotoId(id) {
+            API.initHttpState();
+            console.log("id+ " + id);
+            return new Promise(resolve => {
+                $.ajax({
+                    url: serverHost + photoLikes_API + "/" + id,
+                    type: 'GET',
+                    headers: this.getBearerAuthorizationToken(),
+                    success: (likes) => resolve(likes),
+                    error: (xhr) => { this.setHttpErrorState(xhr); resolve(null); }
+                });
+            });
+        }   
     static GetPhotos(queryString = null) {
         let url = serverHost + photos_API + (queryString ? queryString : "");
         return new Promise(resolve => {
@@ -285,6 +298,35 @@ class API {
             });
         });
     }
+
+    static LikePhoto(photoId, userId) {
+        console.log(photoId);
+        API.initHttpState();
+        return new Promise(resolve => {
+            $.ajax({
+                url: `${serverHost}/api/photolikes`,
+                type: 'POST',
+                contentType: 'application/json',
+                headers: this.getBearerAuthorizationToken(),
+                data: JSON.stringify({ PhotoId: photoId, UserId: userId }),
+                success: (data) => resolve(data),
+                error: (xhr) => { this.setHttpErrorState(xhr); resolve(null); }
+            });
+        });
+    }
+    static UnlikePhoto(likeId) {
+        API.initHttpState();
+        return new Promise(resolve => {
+            $.ajax({
+                url: `${serverHost}/api/photolikes/${likeId}`,
+                type: 'DELETE',
+                headers: this.getBearerAuthorizationToken(),
+                success: () => resolve(true),
+                error: (xhr) => { this.setHttpErrorState(xhr); resolve(false); }
+            });
+        });
+    }
+      
 }
 
 
