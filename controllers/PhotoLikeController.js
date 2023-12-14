@@ -6,8 +6,11 @@ import Controller from "./Controller.js";
 
 export default class Photos extends Controller {
   constructor(HttpContext) {
-    super(HttpContext, new Repository(new PhotoModel()), Authorizations.user());
-    this.photoLikesRepository = new Repository(new PhotoLikeModel());
+    super(
+      HttpContext,
+      new Repository(new PhotoLikeModel()),
+      Authorizations.user()
+    );
   }
 
   get(id) {
@@ -27,6 +30,7 @@ export default class Photos extends Controller {
       } else this.HttpContext.response.notImplemented();
     } else this.HttpContext.response.unAuthorized("Unauthorized access");
   }
+
   post(data) {
     if (Authorizations.writeGranted(this.HttpContext, this.authorizations)) {
       if (this.repository != null) {
@@ -81,12 +85,10 @@ export default class Photos extends Controller {
   }
   remove(id) {
     if (Authorizations.writeGranted(this.HttpContext, this.authorizations)) {
-      //find by field and remove photos from photo like repository
       if (this.repository != null) {
         if (id) {
-          if (this.repository.remove(id)) {
-            this.HttpContext.response.accepted();
-          } else this.HttpContext.response.notFound("Ressource not found.");
+          if (this.repository.remove(id)) this.HttpContext.response.accepted();
+          else this.HttpContext.response.notFound("Ressource not found.");
         } else
           this.HttpContext.response.badRequest(
             "The Id in the request url is rather not specified or syntactically wrong."

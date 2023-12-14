@@ -865,154 +865,157 @@
     });
   }
 
-  async function createPhoto(photo) {
-    if (await API.CreatePhoto(photo)) {
-      renderPhotos();
-    } else {
-      renderError("Un problème est survenu.");
-    }
+async function createPhoto(photo) {
+  if (await API.CreatePhoto(photo)) {
+    renderPhotos();
+  } else {
+    renderError("Un problème est survenu.");
   }
-  
- async  function renderPhoto(photo) {
-    
-    API.GetPhotosById(photo).then(photo => {
-      if (photo) {
-        API.GetLikesByPhotoId(photo.Id).then(likes => {
+}
+function renderPhoto(photo) {
+  API.GetPhotosById(photo).then(photo => {
+  if (photo) {
+    API.GetLikesByPhotoId(photo.Id).then(likes => {
 
-          currentPhotoLikes = likes || []; 
-          let likersNames = likes.map(like => like.UserName).join(", ");
-          let likeIconTitle = likersNames ? `${likersNames}` : '';
+      currentPhotoLikes = likes || []; 
+      let likersNames = likes.map(like => like.UserName).join(", ");
+      let likeIconTitle = likersNames ? `${likersNames}` : '';
 
-          let likesCount = likes ? likes.length : 0;
-          let userHasLiked = likes ? likes.some(like => like.UserId === API.retrieveLoggedUser().Id) : false;
-          let likeIconClass = userHasLiked ? "cmdIcon fa fa-thumbs-up" : "cmdIcon fa-regular fa-thumbs-up";
+      let likesCount = likes ? likes.length : 0;
+      let userHasLiked = likes ? likes.some(like => like.UserId === API.retrieveLoggedUser().Id) : false;
+      let likeIconClass = userHasLiked ? "cmdIcon fa fa-thumbs-up" : "cmdIcon fa-regular fa-thumbs-up";
 
 
-          eraseContent();
-          UpdateHeader("Détails", "photoDetails");
+      eraseContent();
+      UpdateHeader("Détails", "photoDetails");
 
-          let formattedDate = convertToFrenchDate(photo.Date);
+      let formattedDate = convertToFrenchDate(photo.Date);
 
-          let detailsContent = `
-            <div class="photoDetailsContainer">
-              <div class="photoDetailsOwner">
-                <div class="UserAvatarSmall" style="background-image:url('${photo.Owner.Avatar}');"></div>
-                <span>${photo.Owner.Name}</span>
+      let detailsContent = `
+        <div class="photoDetailsContainer">
+          <div class="photoDetailsOwner">
+            <div class="UserAvatarSmall" style="background-image:url('${photo.Owner.Avatar}');"></div>
+            <span>${photo.Owner.Name}</span>
+          </div>
+          <hr>
+          <div class="photoDetailsTitle">${photo.Title}</div>
+          <div class="photoDetailsImageContainer">
+            <img class="photoDetailsLargeImage" src="${photo.Image}" alt="${photo.Title}" />
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div class="photoDetailsCreationDate">${formattedDate}</div>
+              <div class="photoDetailsLikes" style="display: flex; align-items: center;">
+              <i class="${likeIconClass}" title="${likeIconTitle}" onclick="toggleLike(event,'${photo.Id}', ${userHasLiked}, true)"></i> 
+              <span>${likesCount}</span>
               </div>
-              <hr>
-              <div class="photoDetailsTitle">${photo.Title}</div>
-              <div class="photoDetailsImageContainer">
-                <img class="photoDetailsLargeImage" src="${photo.Image}" alt="${photo.Title}" />
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                  <div class="photoDetailsCreationDate">${formattedDate}</div>
-                  <div class="photoDetailsLikes" style="display: flex; align-items: center;">
-                  <i class="${likeIconClass}" title="${likeIconTitle}" onclick="toggleLike(event,'${photo.Id}', ${userHasLiked}, true)"></i> 
-                  <span>${likesCount}</span>
-                  </div>
-                </div>
-              </div>
-              <div class="photoDetailsDescription" style="word-wrap: break-word; max-width: 100%;">${photo.Description}</div>
             </div>
-          `;
+          </div>
+          <div class="photoDetailsDescription" style="word-wrap: break-word; max-width: 100%;">${photo.Description}</div>
+        </div>
+      `;
 
-          $("#content").html(detailsContent);
-        }).catch(error => {
-          console.error("Error fetching likes:", error);
-        });
-      } else {
-        renderError("Photo not found.");
-      }
+      $("#content").html(detailsContent);
     }).catch(error => {
-      renderError("An error occurred while fetching the photo details.");
+      console.error("Error fetching likes:", error);
     });
+  } else {
+    renderError("Photo not found.");
   }
-
-
-
-  async function toggleLike(event,photoId, userHasLiked, inPhotoList) {
-    event.preventDefault();  
-
-    let loggedUser = API.retrieveLoggedUser();
-    if (userHasLiked) {
-        let userLike = currentPhotoLikes.find(
-            like => like.UserId === loggedUser.Id && like.PhotoId === photoId
-        );
-        console.log(currentPhotoLikes);
-        if (userLike)
-         {
-            await API.UnlikePhoto(userLike.Id);
-            if (inPhotoList) {
-              
-                currentPhotoLikes = currentPhotoLikes.filter(like => like.Id !== userLike.Id);
-            }
-        }
-    } 
-    else {
-        let newLike = await API.LikePhoto(photoId, loggedUser.Id);
-        if (inPhotoList) {
-            currentPhotoLikes.push(newLike);
-        }
-    }
-    if (inPhotoList) {
-        renderPhotosList();
-    } else {
-        renderPhoto(photoId);
-    }
+}).catch(error => {
+  renderError("An error occurred while fetching the photo details.");
+});
 }
 
 
-  async function renderPhotosList() {
-    eraseContent();
-    let photos = await API.GetPhotos();
-    let editDel = "";
-    let loggedUser = await API.retrieveLoggedUser();
-    if (API.error) {
-      renderError();
-    } else {
-      $("#content").empty().addClass("photosLayout");
-        
-      photos.data.forEach(async (photo) => {
+async function toggleLike(event,photoId, userHasLiked, inPhotoList) {
+  event.preventDefault();  
 
-        if (photo.Shared == true || photo.OwnerId == loggedUser.Id) {
-          if (loggedUser.Id == photo.OwnerId) {
-            editDel = `
-            <i class="cmdIcon fa fa-pencil" onclick="renderEditPhotoForm('${photo.Id}')"></i>
-            <i class="cmdIcon fa fa-trash" onclick="deletePhotoForm('${photo.Id}')"></i>`;
+  let loggedUser = API.retrieveLoggedUser();
+  if (userHasLiked) {
+      let userLike = currentPhotoLikes.find(
+          like => like.UserId === loggedUser.Id && like.PhotoId === photoId
+      );
+      console.log(currentPhotoLikes);
+      if (userLike)
+       {
+          await API.UnlikePhoto(userLike.Id);
+          if (inPhotoList) {
+            
+              currentPhotoLikes = currentPhotoLikes.filter(like => like.Id !== userLike.Id);
           }
-
-          const likes = await API.GetLikesByPhotoId(photo.Id);
-          currentPhotoLikes.push(...likes); 
-
-          const userHasLiked = likes ? likes.some(like => like.UserId === loggedUser.Id) : false;
-          
-          const likeIconClass = userHasLiked ? "cmdIcon fa fa-thumbs-up" : "cmdIcon fa-regular fa-thumbs-up";
-          
-          const likesCount = likes ? likes.length : 0;
-
-          let photoRow =
-            `
-              <div class="photoLayout">
-                  <div class="photoTitleContainer">
-                      <div class="photoTitle">${photo.Title}</div>
-                      ` +
-            editDel +
-            `
-                  </div>
-                  <div class="photoImage" onclick="navigateToPhotoDescription('${photo.Id}')" style="background-image: url('${photo.Image}');"></div>
-                  <div class="photoCreationDate">
-                      <div>${new Date(photo.Date).toLocaleDateString()} @ ${new Date(photo.Date).toLocaleTimeString()}</div>
-              <div>${likesCount}<i class="${likeIconClass}" onclick="toggleLike(event,'${photo.Id}', ${userHasLiked}, true)"></i></div>
-                  </div>
-              </div>
-            `;
-          $("#content").append(photoRow);
-        }
-      });
-      $("#editImageCmd").on("click", function (event) {
-        renderEditPhotoForm();
-      });
-    }
+      }
+  } 
+  else {
+      let newLike = await API.LikePhoto(photoId, loggedUser.Id);
+      if (inPhotoList) {
+          currentPhotoLikes.push(newLike);
+      }
   }
+  if (inPhotoList) {
+      renderPhotosList();
+  } else {
+      renderPhoto(photoId);
+  }
+}
+
+async function renderPhotosList() {
+  eraseContent();
+  let photos = await API.GetPhotos();
+  let editDel = "";
+  let loggedUser = await API.retrieveLoggedUser();
+  let user;
+  let pdpShared = "";
+  if (API.error) {
+    renderError();
+  } else {
+    //like logo when liked <i class="cmdIcon fa fa-thumbs-up" id="unlikeCmd"></i>
+    $("#content").empty().addClass("photosLayout");
+    photos.data.forEach(async (photo) => {
+      user = await API.GetAccount(photo.OwnerId);
+      editDel = "";
+      pdpShare = "";
+      if (photo.Shared == true || photo.OwnerId == loggedUser.Id) {
+        if (loggedUser.Id == photo.OwnerId) {
+          editDel = `
+          <i class="cmdIcon fa fa-pencil" onclick="renderEditPhotoForm('${photo.Id}')"></i>
+          <i class="cmdIcon fa fa-trash" onclick="deletePhotoForm('${photo.Id}')"></i>`;
+          if (photo.Shared == true) {
+            pdpShared =
+              `<i class="UserAvatarSmall" style="background-image: url('${user.data.Avatar}');"></i>` +
+              `<i class="cmdIcon fa fa-share-square"></i>`;
+          } else {
+            pdpShared = `<i class="UserAvatarSmall" style="background-image: url('${user.data.Avatar}');"></i>`;
+          }
+        } else {
+          pdpShared = `<i class="UserAvatarSmall" style="background-image: url('${user.data.Avatar}');"></i>`;
+        }
+
+        let photoRow =
+          `
+            <div class="photoLayout">
+                <div class="photoTitleContainer">
+                    <div class="photoTitle">${photo.Title}</div>
+                    ` +
+          editDel +
+          `
+            </div>
+              <div class="photoImage" onclick="navigateToPhotoDescription('${photo.Id}')" style="background-image: url('${photo.Image}');">` +
+          pdpShared +
+          `</div>
+              <div class="photoCreationDate">
+                <div>${new Date(photo.Date).toLocaleDateString()} @ ${new Date(
+            photo.Date
+          ).toLocaleTimeString()}</div><div>nbLikes<i class="cmdIcon fa-regular fa-thumbs-up" onclick="addLike('${
+            photo.Id
+          }')"></i></div></div></div>
+          `;
+        $("#content").append(photoRow);
+      }
+    });
+    $("#editImageCmd").on("click", function (event) {
+      renderEditPhotoForm();
+    });
+  }
+}
 
   async function renderEditPhotoForm(photoId = null) {
     noTimeout(); // Disable timeout
@@ -1105,52 +1108,52 @@
     timeout();
     let photo = await API.GetPhotosById(photoId);
 
-    if (photo) {
-      eraseContent();
-      UpdateHeader("Retrait de photo", "retraitPhoto");
-      $("#newPhotoCmd").hide();
-      $("#content").append(`
-      <div class="content loginForm">
-                      <br>
-                      <div class="form UserRow ">
-                          <h4> Voulez-vous vraiment effacer cette photo? </h4>
-                          <div class="UserContainer noselect">
-                              <div class="UserLayout">
-                              <div class="photoLayout">
-                              <div class="photoTitleContainer">
-                                  <div class="photoTitle">${photo.Title}</div>
-                          </div>
-                            <div class="photoImage" style="background-image: url('${photo.Image}');"></div>
-                                  
-                              </div>
-                          </div>
-                      </div>           
-                      <div class="form">
-                          <button class="form-control btn-danger" id="deletePhotoCmd">Effacer la photo</button>
-                          <br>
-                          <button class="form-control btn-secondary" id="abortDeleteAccountCmd">Annuler</button>
-                      </div>
-                  </div>
-      `);
-      $("#deletePhotoCmd").on("click", function () {
-        deleteImage(photo);
-      });
-      $("#abortDeleteAccountCmd").on("click", renderPhotosList);
-    } else {
-      renderError("Une erreur est survenue");
-    }
+  if (photo) {
+    eraseContent();
+    UpdateHeader("Retrait de photo", "retraitPhoto");
+    $("#newPhotoCmd").hide();
+    $("#content").append(`
+    <div class="content loginForm">
+                    <br>
+                    <div class="form UserRow ">
+                        <h4> Voulez-vous vraiment effacer cette photo? </h4>
+                        <div class="UserContainer noselect">
+                            <div class="UserLayout">
+                            <div class="photoLayout">
+                            <div class="photoTitleContainer">
+                                <div class="photoTitle">${photo.Title}</div>
+                        </div>
+                          <div class="photoImage" style="background-image: url('${photo.Image}');"></div>
+                                
+                            </div>
+                        </div>
+                    </div>           
+                    <div class="form">
+                        <button class="form-control btn-danger" id="deletePhotoCmd">Effacer la photo</button>
+                        <br>
+                        <button class="form-control btn-secondary" id="abortDeleteAccountCmd">Annuler</button>
+                    </div>
+                </div>
+    `);
+    $("#deletePhotoCmd").on("click", function () {
+      deleteImage(photo);
+    });
+    $("#abortDeleteAccountCmd").on("click", renderPhotosList);
+  } else {
+    renderError("Une erreur est survenue");
   }
-  async function deleteImage(image) {
-    if (await API.DeletePhoto(image.Id)) {
-      renderPhotos();
-    } else {
-      renderError("Un problème est survenu.");
-    }
+}
+async function deleteImage(image) {
+  if (await API.DeletePhoto(image.Id)) {
+    renderPhotos();
+  } else {
+    renderError("Un problème est survenu.");
   }
+}
 
-  function navigateToPhotoDescription(photoId) {
-    let photo = API.GetPhotosById(photoId);
-    console.log(photoId);
-    renderPhoto(photoId);
-  }
-  //#endregion
+function navigateToPhotoDescription(photoId) {
+  let photo = API.GetPhotosById(photoId);
+  console.log(photoId);
+  renderPhoto(photoId);
+}
+//#endregion

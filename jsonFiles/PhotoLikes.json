@@ -1,1 +1,14 @@
+[
+  {
+    "Id": "6a32dfd0-9a0f-11ee-ab76-e32d7592b6a6",
+    "userId": "102ed540-9067-11ee-ae77-b3bd8528eca2",
+    "imageId": "54edd130-9888-11ee-8f8e-8943f7dbafbd"
+  },
+  {
+    "Id": "7aad2aa0-9a0f-11ee-ab76-e32d7592b6a6",
+    "userId": "102ed540-9067-11ee-ae77-b3bd8528eca2",
+    "imageId": "c2a94190-995b-11ee-958b-a9076c8f9cdb"
+  }
+]
+
 [{"Id":"a7bc7a20-9a12-11ee-87b6-b7831264ce91","PhotoId":"ee40d960-9a07-11ee-a419-a3fde019ee01","UserId":"b3a0b8b0-9067-11ee-ae77-b3bd8528eca2","UserName":"Saliha Yacoub"},{"Id":"133858a0-9a13-11ee-87b6-b7831264ce91","PhotoId":"9589d3f0-99f1-11ee-8ddd-5b0d2b86dcbb","UserId":"102ed540-9067-11ee-ae77-b3bd8528eca2","UserName":"Nicolas Chourot"},{"Id":"16351de0-9a13-11ee-87b6-b7831264ce91","PhotoId":"ee40d960-9a07-11ee-a419-a3fde019ee01","UserId":"102ed540-9067-11ee-ae77-b3bd8528eca2","UserName":"Nicolas Chourot"}]
