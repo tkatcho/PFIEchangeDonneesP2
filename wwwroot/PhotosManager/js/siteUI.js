@@ -14,6 +14,8 @@
   let currentViewName = "photosList";
   let delayTimeOut = 200; // seconds
   let currentPhotoLikes = []; 
+  let showOnlyOwnPhotos = false;
+  let currentSortType = ''; // No default sort type
 
   // pour la pagination
   let photoContainerWidth = 400;
@@ -85,7 +87,21 @@
     $("#renderManageUsersMenuCmd").on("click", renderManageUsers);
     $("#editProfilCmd").on("click", renderEditProfilForm);
     $("#newPhotoCmd").on("click", renderCreatePhotoForm);
-
+    $("#sortByDateCmd").on("click", function() {
+      sortPhotosBy("date");
+    });
+  
+    $("#sortByOwnersCmd").on("click", function() {
+      sortPhotosBy("owner");
+    });
+  
+    $("#sortByLikesCmd").on("click", function() {
+      sortPhotosBy("likes");
+    });
+  
+    $("#ownerOnlyCmd").on("click", function() {
+      filterByOwner();
+    });
     $("#aboutCmd").on("click", renderAbout);
   }
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -119,11 +135,36 @@
               </span>`;
   }
   function viewMenu(viewName) {
+    let sortByDateCheckmark = currentSortType === 'date' ? '<i class="fa fa-check mx-2"></i>' : '';
+    let sortByOwnerCheckmark = currentSortType === 'owner' ? '<i class="fa fa-check mx-2"></i>' : '';
+    let sortByLikesCheckmark = currentSortType === 'likes' ? '<i class="fa fa-check mx-2"></i>' : '';
+    let ownerOnlyCheckmark = showOnlyOwnPhotos ? '<i class="fa fa-check mx-2"></i>' : '';
+
     if (viewName == "photosList") {
-      // todo
-      return "";
+      return `
+        <div class="dropdown-divider"></div>
+        <span class="dropdown-item ${currentSortType === 'date' ? 'currentFilter' : ''}" id="sortByDateCmd">
+          ${sortByDateCheckmark}
+          <i class="menuIcon fa fa-calendar mx-2"></i> Photos par date de création
+        </span>
+        <span class="dropdown-item ${currentSortType === 'owner' ? 'currentFilter' : ''}" id="sortByOwnersCmd">
+          ${sortByOwnerCheckmark}
+          <i class="menuIcon fa fa-users mx-2"></i> Photos par créateur
+        </span>
+        <span class="dropdown-item ${currentSortType === 'likes' ? 'currentFilter' : ''}" id="sortByLikesCmd">
+          ${sortByLikesCheckmark}
+          <i class="menuIcon fa fa-heart mx-2"></i> Photos les plus aimées
+        </span>
+        <span class="dropdown-item ${showOnlyOwnPhotos ? 'currentFilter' : ''}" id="ownerOnlyCmd">
+        ${ownerOnlyCheckmark}
+        <i class="menuIcon fa fa-user mx-2"></i> Mes photos
+      </span>
+      `;
     } else return "";
   }
+  
+  
+  
   function connectedUserAvatar() {
     let loggedUser = API.retrieveLoggedUser();
     if (loggedUser)
@@ -177,6 +218,8 @@
       $("#customHeader").hide();
     }
     attachCmd();
+    viewMenu(viewName); 
+
   }
   //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   /// Actions and command
@@ -956,74 +999,71 @@ async function toggleLike(event,photoId, userHasLiked, inPhotoList) {
       renderPhoto(photoId);
   }
 }
-
 async function renderPhotosList() {
   eraseContent();
   let photos = await API.GetPhotos();
-  let editDel = "";
   let loggedUser = await API.retrieveLoggedUser();
-  let user;
-  let pdpShared = "";
-  currentPhotoLikes= [];
-  if (API.error) {
-    renderError();
-  } else {
-    //like logo when liked <i class="cmdIcon fa fa-thumbs-up" id="unlikeCmd"></i>
-    $("#content").empty().addClass("photosLayout");
-    photos.data.forEach(async (photo) => {
-      user = await API.GetAccount(photo.OwnerId);
-      editDel = "";
-      pdpShare = "";
 
+  currentPhotoLikes = [];
+
+  for (let photo of photos.data) {
       const likes = await API.GetLikesByPhotoId(photo.Id);
-      currentPhotoLikes.push(...likes);
-      const likesCount = likes.length;
-      let userHasLiked = likes.some(like => like.UserId === loggedUser.Id);
-      let likeIconClass = userHasLiked ? "cmdIcon fa fa-thumbs-up" : "cmdIcon fa-regular fa-thumbs-up";
-      const likersNames = likes.map(like => like.UserName).join(", ");
+      photo.likesCount = likes.length;
+      currentPhotoLikes = [...currentPhotoLikes, ...likes];
+  }
 
-      if (photo.Shared == true || photo.OwnerId == loggedUser.Id) {
-        if (loggedUser.Id == photo.OwnerId) {
-          editDel = `
-          <i class="cmdIcon fa fa-pencil" onclick="renderEditPhotoForm('${photo.Id}')"></i>
-          <i class="cmdIcon fa fa-trash" onclick="deletePhotoForm('${photo.Id}')"></i>`;
-          if (photo.Shared == true) {
-            pdpShared =
-              `<i class="UserAvatarSmall" style="background-image: url('${user.data.Avatar}');"></i>` +
-              `<i class="cmdIcon fa fa-share-square"></i>`;
-          } else {
-            pdpShared = `<i class="UserAvatarSmall" style="background-image: url('${user.data.Avatar}');"></i>`;
+  let filteredPhotos = showOnlyOwnPhotos
+      ? photos.data.filter(photo => photo.OwnerId === loggedUser.Id)
+      : photos.data;
+
+  let sortedPhotos = currentSortType ? sortPhotos(filteredPhotos) : filteredPhotos;
+  refreshHeader();
+  if (API.error) {
+      renderError();
+  } else {
+      $("#content").empty().addClass("photosLayout");
+
+      for (let photo of sortedPhotos) {
+          let user = await API.GetAccount(photo.OwnerId);
+          let editDel = "";
+          let pdpShared = "";
+
+          let userHasLiked = currentPhotoLikes.some(like => like.UserId === loggedUser.Id && like.PhotoId === photo.Id);
+          let likeIconClass = userHasLiked ? "cmdIcon fa fa-thumbs-up" : "cmdIcon fa-regular fa-thumbs-up";
+
+          if (photo.Shared || !showOnlyOwnPhotos || photo.OwnerId == loggedUser.Id) {
+              if (loggedUser.Id == photo.OwnerId) {
+                  editDel = `
+                  <i class="cmdIcon fa fa-pencil" onclick="renderEditPhotoForm('${photo.Id}')"></i>
+                  <i class="cmdIcon fa fa-trash" onclick="deletePhotoForm('${photo.Id}')"></i>`;
+              }
+              pdpShared = `<i class="UserAvatarSmall" style="background-image: url('${user.data.Avatar}');"></i>`;
+              if (photo.Shared) {
+                  pdpShared += `<i class="cmdIcon fa fa-share-square"></i>`;
+              }
+
+              let photoRow = `
+              <div class="photoLayout">
+                  <div class="photoTitleContainer">
+                      <div class="photoTitle">${photo.Title}</div>
+                      ${editDel}
+                  </div>
+                  <div class="photoImage" onclick="navigateToPhotoDescription('${photo.Id}')" style="background-image: url('${photo.Image}');">
+                      ${pdpShared}
+                  </div>
+                  <div class="photoCreationDate">
+                      <div>${new Date(photo.Date).toLocaleDateString()} @ ${new Date(photo.Date).toLocaleTimeString()}</div>
+                      <div>${photo.likesCount}<i class="${likeIconClass}" onclick="toggleLike(event, '${photo.Id}', ${userHasLiked}, true)" title=""></i></div>
+                  </div>
+              </div>
+              `;
+              $("#content").append(photoRow);
           }
-        } else {
-          pdpShared = `<i class="UserAvatarSmall" style="background-image: url('${user.data.Avatar}');"></i>`;
-        }
-
-        let photoRow =
-          `
-            <div class="photoLayout">
-                <div class="photoTitleContainer">
-                    <div class="photoTitle">${photo.Title}</div>
-                    ` +
-          editDel +
-          `
-            </div>
-              <div class="photoImage" onclick="navigateToPhotoDescription('${photo.Id}')" style="background-image: url('${photo.Image}');">` +
-          pdpShared +
-          `</div>
-              <div class="photoCreationDate">
-                <div>${new Date(photo.Date).toLocaleDateString()} @ ${new Date(
-            photo.Date
-          ).toLocaleTimeString()}</div>      <div>${likesCount}<i class="${likeIconClass}" onclick="toggleLike(event, '${photo.Id}', ${userHasLiked}, true)" title="${likersNames}"></i></div>
-          </div></div>
-          `;
-        $("#content").append(photoRow);
       }
-    });
-    $("#editImageCmd").on("click", function (event) {
-      renderEditPhotoForm();
-    });
   }
 }
+
+
 
   async function renderEditPhotoForm(photoId = null) {
     noTimeout(); // Disable timeout
@@ -1164,4 +1204,41 @@ function navigateToPhotoDescription(photoId) {
   console.log(photoId);
   renderPhoto(photoId);
 }
+function sortByDate(a, b) {
+  return new Date(b.Date) - new Date(a.Date); // Assuming 'Date' is a valid Date field
+}
+
+function sortByOwner(a, b) {
+  return a.OwnerName.localeCompare(b.OwnerName); // Assuming 'OwnerName' is a field
+}
+
+function sortByLikes(a, b) {
+  return b.likesCount - a.likesCount; // Assuming 'likesCount' is a numeric field
+}
+function sortPhotos(photos) {
+  switch (currentSortType) {
+    case 'date':
+      return photos.sort(sortByDate);
+    case 'owner':
+      return photos.sort(sortByOwner);
+    case 'likes':
+      return photos.sort(sortByLikes);
+    default:
+      return photos; // Default no sorting
+  }
+}
+function sortPhotosBy(sortType) {
+  currentSortType = sortType;
+  renderPhotosList(); // Re-render the list with new sorting
+}
+
+function refreshHeader() {
+  UpdateHeader("Liste des photos", currentViewName); // Refresh the header, including sorting options
+}
+function filterByOwner() {
+  showOnlyOwnPhotos = !showOnlyOwnPhotos;
+  renderPhotosList(); 
+}
+
 //#endregion
+  
