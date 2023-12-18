@@ -1010,6 +1010,7 @@ async function renderPhotosList() {
       const likes = await API.GetLikesByPhotoId(photo.Id);
       photo.likesCount = likes.length;
       currentPhotoLikes = [...currentPhotoLikes, ...likes];
+      
   }
 
   let filteredPhotos = showOnlyOwnPhotos
@@ -1031,7 +1032,7 @@ async function renderPhotosList() {
           let userHasLiked = currentPhotoLikes.some(like => like.UserId === loggedUser.Id && like.PhotoId === photo.Id);
           let likeIconClass = userHasLiked ? "cmdIcon fa fa-thumbs-up" : "cmdIcon fa-regular fa-thumbs-up";
 
-          if (photo.Shared || !showOnlyOwnPhotos || photo.OwnerId == loggedUser.Id) {
+          if ((photo.Shared || photo.OwnerId == loggedUser.Id) || showOnlyOwnPhotos) {
               if (loggedUser.Id == photo.OwnerId) {
                   editDel = `
                   <i class="cmdIcon fa fa-pencil" onclick="renderEditPhotoForm('${photo.Id}')"></i>
